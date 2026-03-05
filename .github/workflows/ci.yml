@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      PORT: ${{secrets.PORT}}
-      MONGO_URI: ${{secrets.MONGO_URI}}
+      PORT: ${{ secrets.PORT }}
+      MONGO_URI: ${{ secrets.MONGO_URI }}
 
     services:
       mongo:
@@ -22,25 +22,27 @@ jobs:
 
     steps:
       - name: Checkout repository
-      - uses: actions/checkout@v5
+        uses: actions/checkout@v5
 
-      - name: Install Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
-      - name: Wating for mongo to start
+      - name: Waiting for MongoDB to start
         run: |
           while ! nc -z localhost 27017; do sleep 1; done
 
-      - name: Seed tasks data to mongo
-        workdir: ./backend
+      - name: Seed tasks data to MongoDB
+        working-directory: ./backend
         run: |
           npm install
           node seedTasksData.js
 
-      - name: Running Backend unit tests
-        workdir: ./backend
+      - name: Run Backend unit tests
+        working-directory: ./backend
         run: |
           npm install
           npm run test
