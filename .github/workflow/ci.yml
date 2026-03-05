@@ -1,0 +1,46 @@
+name: MERN CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  mongo-init:
+    runs-on: ubuntu-latest
+
+    env:
+      PORT: ${{secrets.PORT}}
+      MONGO_URI: ${{secrets.MONGO_URI}}
+
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout repository
+      - uses: actions/checkout@v5
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Wating for mongo to start
+        run: |
+          while ! nc -z localhost 27017; do sleep 1; done
+
+      - name: Seed tasks data to mongo
+        workdir: ./backend
+        run: |
+          npm install
+          node seedTasksData.js
+
+      - name: Running Backend unit tests
+        workdir: ./backend
+        run: |
+          npm install
+          npm run test
