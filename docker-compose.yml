@@ -3,6 +3,8 @@ services:
     image: 'mongo'
     ports:
       - '22430:27017'
+    volumes:
+      - './mongo_data:/data/db'
 
   backend:
     build: './backend'
